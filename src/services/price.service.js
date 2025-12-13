@@ -5,7 +5,7 @@ import logger from './log.service.js';
 
 class PriceService extends EventEmitter {
     connect() {
-        const stream = `${cfg.BINANCE_WS}/${cfg.PAIRS.map((p) => p + '@trade').join('/')}`;
+        const stream = `${cfg.BINANCE_WS}/${cfg.PAIRS.map((p) => p + '@aggTrade').join('/')}`;
         logger.info(`Connecting to ${stream}`);
         this.ws = new WebSocket(stream);
         this.reconnectAttempts = 0;
