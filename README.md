@@ -1,51 +1,120 @@
 # BTC Price Break Bot
 
-Small, resilient Node.js service that listens to Binance WebSocket (trade stream) and notifies when BTC crosses rounded 1,000 levels.
+A resilient, production-ready Node.js service that monitors real-time Bitcoin prices via Binance WebSocket and sends instant Telegram notifications when price levels are broken.
 
-## Features
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Status: Active](https://img.shields.io/badge/Status-Active-success.svg)
 
--   Robust WebSocket reconnect and exponential backoff
--   Prevents duplicate notifications per level with in-memory and optional persistent store
--   Health + metrics endpoint (HTTP) for uptime checks
--   Docker-ready and example Fly deploy
--   Telegram notifications (extendable)
+## 🚀 Features
 
-## Quick start (local)
-
-1. Copy `.env.example` to `.env` and fill values.
-2. `docker build -t btc-price-bot .`
-3. `docker run --env-file .env btc-price-bot`
-
-## Deploy
-
--   Use Fly, Railway, Render, or any Docker-capable host.
--   For Fly: `fly launch` then `fly deploy` (fly.toml included)
-
-## Production notes
-
--   Use a small external datastore (Redis) if you need persistence across restarts.
--   Use a process supervisor (Fly, systemd, or Docker restart policy) to keep container running.
--   Monitor logs and metrics endpoint.
+-   **Smart Breakout Detection**: Uses range-based logic to detect price crossings even during massive volatility (e.g., jumping from 97,990 to 98,010 instantly).
+-   **Daily Market Alerts**: Sends a "Start of Trading Day" summary at 00:00 UTC (5:30 IST) with current price and nearest levels.
+-   **Resource Optimized**: Uses Binance `@aggTrade` stream to handle high-frequency data with minimal CPU (<1%).
+-   **Health Monitoring**:
+    -   Real-time health checks for Redis and WebSocket connections.
+    -   Docker native `HEALTHCHECK` integration with auto-healing.
+-   **Production Ready**:
+    -   Structured logging (Console + File rotation).
+    -   Graceful shutdown and reconnection logic.
+    -   Redis persistence to prevent duplicate alerts on restart.
 
 ---
 
-## File: `.env.example`
+## 🛠️ Quick Start (Docker)
 
-```text
-# Telegram
-TELEGRAM_BOT_TOKEN=your_bot_token
-TELEGRAM_CHAT_ID=your_chat_id
+This is the recommended way to run the bot.
 
-# Binance (public stream, no API key required)
-BINANCE_WS=wss://stream.binance.com:9443/ws
-PAIRS=btcusdt,ethusdt
+1.  **Clone the repository**:
+    ```bash
+    git clone <repo-url>
+    cd BTC-bot
+    ```
 
-# App
-ROUND_STEP=1000
-NOTIFY_COOLDOWN_SECONDS=300
-PORT=3000
-LOG_LEVEL=info
+2.  **Configure Environment**:
+    Copy the example config and edit it.
+    ```bash
+    cp .env.example .env
+    ```
 
-# Optional Redis (for persistence of last levels)
-REDIS_URL=redis://localhost:6379
+3.  **Start Services**:
+    ```bash
+    docker-compose up -d --build
+    ```
+    This starts both the **Bot** and a **Redis** instance.
+
+4.  **Verify Status**:
+    ```bash
+    # Check logs
+    docker-compose logs -f
+
+    # Check Health (Status should be 'healthy')
+    docker ps
+    ```
+
+---
+
+## ⚙️ Configuration
+
+The application is configured via environment variables.
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `TELEGRAM_BOT_TOKEN` | **Required** | Your Telegram Bot Token from @BotFather. |
+| `TELEGRAM_CHAT_ID` | **Required** | Chat ID or Channel ID to send alerts to. |
+| `BINANCE_WS` | `wss://stream.binance.com:9443/ws` | Binance WebSocket Base URL. |
+| `PAIRS` | `btcusdt` | Comma-separated list of pairs to watch (e.g., `btcusdt,ethusdt`). |
+| `ROUND_STEP` | `1000` | The price levels to watch (e.g., every 1000, 500, etc.). |
+| `NOTIFY_COOLDOWN_SECONDS` | `300` | Cooldown preventing duplicate alerts for the *same* level. |
+| `REDIS_URL` | `null` | Connection string for Redis (e.g., `redis://localhost:6379`). |
+| `PORT` | `3000` | Port for the Health Check HTTP server. |
+| `LOG_LEVEL` | `info` | Logging detail (`debug`, `info`, `warn`, `error`). |
+
+---
+
+## 📊 Monitoring & Logs
+
+### Application Logs
+Logs are saved to the `logs/` directory on your host machine:
+-   `logs/combined.log`: All application events (Startup, Breakouts, Connection).
+-   `logs/error.log`: only Error-level events.
+
+View real-time logs via Docker:
+```bash
+docker-compose logs -f
 ```
+
+### Health Check Endpoint
+The bot exposes a rich health status endpoint on port `3000`.
+```bash
+curl http://localhost:3000/healthz
+```
+**Response:**
+```json
+{
+  "uptime": 25.1,
+  "redis": { "status": "connected", "redisStatus": "ready" },
+  "price": { "status": "connected", "readyState": 1, "lastMessageAgoMs": 211 }
+}
+```
+
+---
+
+## 📂 Architecture
+
+The project follows a modular service-based architecture:
+
+-   `src/app.js`: Main orchestrator. Wires specific services together.
+-   `src/services/`:
+    -   `price.service.js`: Manages WebSocket connection (`@aggTrade`), reconnections, and event emission.
+    -   `redis.service.js`: Handles state persistence.
+    -   `alert.service.js`: Manages Telegram API interactions.
+    -   `health.service.js`: Express server for `/healthz`.
+    -   `log.service.js`: Winston configuration for File/Console logging.
+-   `src/logic/`:
+    -   `strategy.js`: Pure business logic (Breakout calculation, Daily check validation).
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License.
