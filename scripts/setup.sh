@@ -30,6 +30,11 @@ sudo mkdir -p /usr/local/lib/docker/cli-plugins/
 sudo curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m) -o /usr/local/lib/docker/cli-plugins/docker-compose
 sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
+# 5.1 Install Docker Buildx (Required for compose build)
+echo -e "${GREEN}Installing Docker Buildx...${NC}"
+sudo curl -SL https://github.com/docker/buildx/releases/latest/download/buildx-linux-$(uname -m) -o /usr/local/lib/docker/cli-plugins/docker-buildx
+sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
+
 # 6. Setup Swap Memory (Crucial for t2.micro)
 # Check if swap exists
 if [ $(free | grep -i swap | awk '{print $2}') -eq 0 ]; then
