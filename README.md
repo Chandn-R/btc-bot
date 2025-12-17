@@ -52,6 +52,32 @@ This is the recommended way to run the bot.
     ```
 
 ---
+ 
+ ## 🚀 Deployment Automation (AWS EC2)
+ 
+ This repository includes automation scripts optimized for **Amazon Linux 2023** on modest hardware (like `t2.micro`).
+ 
+ ### 1. One-Time Setup
+ Run this script immediately after launching your EC2 instance. It installs Git, Docker, and configures Swap memory (crucial for t2.micro).
+ 
+ ```bash
+ # 1. Clone repo
+ git clone <repo-url>
+ cd BTC-bot
+ 
+ # 2. Run Setup
+ ./scripts/setup.sh
+ ```
+ *Note: You will be asked to log out and log back in to apply Docker permissions.*
+ 
+ ### 2. Updates
+ To pull the latest code and redeploy safely:
+ 
+ ```bash
+ ./scripts/update.sh
+ ```
+ 
+ ---
 
 ## ⚙️ Configuration
 
