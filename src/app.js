@@ -72,10 +72,12 @@ class App {
                 nowSec() - lastNot.ts <= cfg.NOTIFY_COOLDOWN_SECONDS;
 
             if (!isDuplicate) {
+                // Mark notified immediately to prevent race conditions
+                await redisService.markNotified(pair, level);
+
                 await alertService.send(
                     `${emoji} ${pair.toUpperCase()} ${type} ${level} — ${price}`
                 );
-                await redisService.markNotified(pair, level);
             } else {
                 logger.info(`Skipped duplicate for ${pair}@${level}`);
             }
