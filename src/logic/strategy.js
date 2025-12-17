@@ -21,8 +21,8 @@ export function checkBreakout(lastPrice, currentPrice) {
         const isUp = currentPrice > lastPrice;
         return {
             level: crossedLevel,
-            type: isUp ? 'broke above' : 'fell below',
-            emoji: isUp ? '🚀' : '⚠️'
+            type: isUp ? 'cross above' : 'cross below',
+            emoji: isUp ? '🟢' : '🔴'
         };
     }
 
