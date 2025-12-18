@@ -64,12 +64,14 @@ class App {
                 `[BREAKOUT] ${pair.toUpperCase()} ${type} ${level} | Price: ${last} -> ${price}`
             );
 
-            // Check cooldown / duplicate
+            // Check cooldown / duplicate (1H candle rule)
             const lastNot = await redisService.getLastNotified(pair);
+            const currentCandleStart = Math.floor(nowSec() / 3600) * 3600;
+
             const isDuplicate =
                 lastNot &&
                 lastNot.level === level &&
-                nowSec() - lastNot.ts <= cfg.NOTIFY_COOLDOWN_SECONDS;
+                lastNot.ts >= currentCandleStart;
 
             if (!isDuplicate) {
                 // Mark notified immediately to prevent race conditions

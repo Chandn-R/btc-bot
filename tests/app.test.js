@@ -97,18 +97,32 @@ describe('App Orchestration', () => {
             expect(redisService.markNotified).toHaveBeenCalledWith('BTCUSD', 51000);
         });
 
-        test('should skip alert if duplicate within cooldown', async () => {
+        test('should skip alert if duplicate within same 1h candle', async () => {
             checkBreakout.mockReturnValue({ level: 51000, type: 'broke above', emoji: '🚀' });
             redisService.getLastNotified.mockResolvedValue({
                 level: 51000,
-                ts: 1000
+                ts: 3610 // 01:00:10
             });
-            nowSec.mockReturnValue(1010);
+            nowSec.mockReturnValue(3700); // 01:01:40 (Same hour: 3600-7199)
 
             await app.checkBreakout('BTCUSD', 50900, 51100);
 
             expect(alertService.send).not.toHaveBeenCalled();
             expect(redisService.markNotified).not.toHaveBeenCalled();
+        });
+
+        test('should send alert if duplicate but in new 1h candle', async () => {
+            checkBreakout.mockReturnValue({ level: 51000, type: 'broke above', emoji: '🚀' });
+            redisService.getLastNotified.mockResolvedValue({
+                level: 51000,
+                ts: 3500 // 00:58:20 (Previous hour)
+            });
+            nowSec.mockReturnValue(3700); // 01:01:40 (New hour)
+
+            await app.checkBreakout('BTCUSD', 50900, 51100);
+
+            expect(alertService.send).toHaveBeenCalled();
+            expect(redisService.markNotified).toHaveBeenCalledWith('BTCUSD', 51000);
         });
     });
 });
