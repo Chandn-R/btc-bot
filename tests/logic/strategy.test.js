@@ -21,8 +21,8 @@ describe('Strategy Logic', () => {
             const result = checkBreakout(50900, 51100);
             expect(result).toEqual({
                 level: 51000,
-                type: 'broke above',
-                emoji: '🚀'
+                type: 'cross above',
+                emoji: '🟢'
             });
         });
 
@@ -31,8 +31,8 @@ describe('Strategy Logic', () => {
             const result = checkBreakout(51100, 50900);
             expect(result).toEqual({
                 level: 51000,
-                type: 'fell below',
-                emoji: '⚠️'
+                type: 'cross below',
+                emoji: '🔴'
             });
         });
 
@@ -42,8 +42,8 @@ describe('Strategy Logic', () => {
             const result = checkBreakout(50000, 51000);
             expect(result).toEqual({
                 level: 51000,
-                type: 'broke above',
-                emoji: '🚀'
+                type: 'cross above',
+                emoji: '🟢'
             });
         });
     });
