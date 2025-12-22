@@ -46,11 +46,11 @@ class App {
         if (isDailyStart(now)) {
             const currentDay = now.getUTCDate();
             if (this.lastDailyCheckDay !== currentDay) {
+                this.lastDailyCheckDay = currentDay;
                 const { up, down } = getNearestLevels(price, cfg.ROUND_STEP);
                 await alertService.send(
                     `☀️ Start of Trading Day (5:30 IST).\n${pair.toUpperCase()} Price: ${price}\nWatching levels: broke > ${up} or fell < ${down}`
                 );
-                this.lastDailyCheckDay = currentDay;
             }
         }
     }
