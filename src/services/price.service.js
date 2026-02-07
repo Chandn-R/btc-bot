@@ -5,7 +5,7 @@ import logger from './log.service.js';
 
 class PriceService extends EventEmitter {
     connect() {
-        const stream = `${cfg.BINANCE_WS}/${cfg.PAIRS.map((p) => p + '@aggTrade').join('/')}`;
+        const stream = `${cfg.BINANCE_WS}/${cfg.PAIRS.map((p) => p + '@miniTicker').join('/')}`;
         logger.info(`Connecting to ${stream}`);
         this.ws = new WebSocket(stream);
         this.reconnectAttempts = 0;
@@ -18,7 +18,7 @@ class PriceService extends EventEmitter {
         this.ws.on('message', (data) => {
             try {
                 const msg = JSON.parse(data.toString());
-                const price = parseFloat(msg.p);
+                const price = parseFloat(msg.c); // 'c' is the close price in miniTicker
                 const pair = (msg.s || '').toLowerCase();
                 if (pair && price) {
                     this.lastMessageTime = Date.now();
